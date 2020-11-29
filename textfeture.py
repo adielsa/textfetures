@@ -1,7 +1,13 @@
+import os
+
+print("= Install library")
+os.system("pip install -Uqq h5py numpy pandas matplotlib bs4 regex flair tables fastai ")
+
+
+print("= Import library")
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import os
 import gc
 
 from bs4 import BeautifulSoup
@@ -16,9 +22,23 @@ import string
 # !conda install -y -c conda-forge spacy-model-en_core_web_sm
 
 import spacy
-# spacy.cli.download("en_core_web_sm")
+
+if ('check_en_core_web_sm' not in locals()):
+	spacy.cli.download("en_core_web_sm")
+	check_en_core_web_sm = True
 import en_core_web_sm
 import re
+
+import flair
+
+#Check we we using GPU
+if flair.torch.cuda.is_available():
+	print("GPU ON")
+	flair.device = flair.torch.device('cuda:0')
+else:
+	print("cpu mode")
+	flair.device = flair.torch.device('cpu')
+
 
 
 def clean_text_before_save(text, twitter_user=True, url2URL=True):
@@ -186,7 +206,8 @@ def punctuation_count(text, result={}, debug=0):
 def get_document_embeding(text, result={}, debug=0):
 	from flair.data import Sentence
 	from flair.embeddings import TransformerDocumentEmbeddings
-	embedding = TransformerDocumentEmbeddings('bert-base-cased')
+	# embedding = TransformerDocumentEmbeddings('bert-base-cased')
+	embedding = TransformerDocumentEmbeddings('distilbert-base-uncased')
 	sentence = Sentence(text)
 
 	# embed the sentence
@@ -266,7 +287,6 @@ def single_doc_tfidf(text, text_vec, result={}, debug=0):
 	score_vals = {}
 
 	for idx, score in sort_coo(tf_idf_vector.tocoo()):
-		print(score)
 		score_vals[text_vec['cv_feature_names'][idx]] = round(score, 3)
 	result['score_vals'] = score_vals
 
