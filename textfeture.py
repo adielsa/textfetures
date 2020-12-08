@@ -138,7 +138,7 @@ def get_text_from_html(contents, debug=0):
 	return result
 
 
-def get_count_from_html(html_data, result: dict = {}, debug=0):
+def get_wordfreq_from_html_data(html_data, result: dict = {}, debug=0):
 	# trigram_measures = nltk.collocations.TrigramAssocMeasures()
 	# tokens = nltk.wordpunct_tokenize(html_data['text'])
 	# finder = TrigramCollocationFinder.from_words(tokens)
@@ -186,7 +186,7 @@ def get_nlp_count_from_text(text, result: dict = {}, debug=0):
 	return result
 
 
-def punctuation_count(text, result={}, debug=0):
+def punctuation_count(text:str, result={}, debug=0):
 	punctuation = {'punct_all': """!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~""",
 				   'punct_bind': """()[]{}""",
 				   'punct_compare': """<>=?""",
@@ -196,11 +196,25 @@ def punctuation_count(text, result={}, debug=0):
 				   'punct_math': """*+-%"""}
 	for idx, punct in punctuation.items():
 		# print(idx,"   ",punct)
-		result[idx] = len([c for c in str(text) if c in punct])
+		result[idx] = len([c for c in text if c in punct])
 	# can use also string.count
 	if (debug):
 		print(f"text:{text}\nresult:{result}")
 	return result
+
+
+def count_uppercare_ratio_to_len(text:str, result={}, debug=0):
+	result['text_len'] = text.apply(len)
+	result['word_count'] = text.apply(lambda x: len(str(x).split()))
+	# Count of uppercase letters
+	result['caps_count'] = text.apply(lambda x: sum(1 for c in str(x) if c.isupper()))
+	# Ratio of uppercase letters
+	result['caps_ratio_len'] = result['caps_count'] / result['text_len']
+	result['caps_ratio_word'] = result['caps_count'] / result['text_len']
+	if (debug):
+		print(f"text:{text}\nresult:{result}")
+	return result
+
 
 
 def get_document_embeding(text, result={}, debug=0):
@@ -682,7 +696,7 @@ def demo_func(debug=1, html_orj=""):
 """
 	result = {}
 	html_data = get_text_from_html(html_orj, debug=debug)
-	html_count = get_count_from_html(html_data, debug=debug)
+	html_count = get_wordfreq_from_html_data(html_data, debug=debug)
 	# TODO add tokenize of word
 	get_nlp_count_from_text(html_data['clean_text'], debug=debug)
 	punctuation_count(html_data['text'], debug=debug)
